@@ -1,7 +1,8 @@
 <script setup></script>
+import { RouterView } from 'vue-router'
 
 <template>
-    TODO
+    TODOX
 </template>
 
 <style scoped src="./Main.css" />
