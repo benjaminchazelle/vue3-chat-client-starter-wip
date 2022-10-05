@@ -17,7 +17,7 @@ const { user } = toRefs(authStore)
     <template v-else>
         <Sidebar />
         <div class="main">
-            <router-view></router-view>
+            <RouterView/>
         </div>
     </template>
 </template>

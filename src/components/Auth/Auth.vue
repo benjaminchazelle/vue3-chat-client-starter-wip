@@ -5,11 +5,13 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
-const { defaultUsername, defaultPassword, defaultEndpoint, authenticating } =
-    useChatClient()
-const username = ref(defaultUsername.value)
-const password = ref(defaultPassword.value)
-const endpoint = ref(defaultEndpoint.value)
+const { defaultUsername, defaultPassword, defaultEndpoint } = authStore
+
+const { authenticating } = useChatClient()
+
+const username = ref(defaultUsername)
+const password = ref(defaultPassword)
+const endpoint = ref(defaultEndpoint)
 
 const error = ref(null)
 
@@ -18,7 +20,12 @@ async function login() {
     try {
         await authStore.login(username.value, password.value)
     } catch (e) {
-        error.value = e
+        const messages = {
+            NOT_AUTHENTICATED: 'Mot de passe incorrect',
+            NOT_VALID_USERNAME: 'Username non valide',
+            NOT_VALID_PASSWORD: 'Mot de passe non valide',
+        }
+        error.value = messages?.[e] || e
     }
 }
 </script>

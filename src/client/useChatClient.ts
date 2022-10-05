@@ -1,32 +1,23 @@
 import { ref } from 'vue'
 import Client from './client'
-import type { Auth } from './client'
-
-const defaultUsername = ref(localStorage.getItem('username'))
-const defaultPassword = ref(localStorage.getItem('password'))
-const defaultEndpoint = ref(
-    localStorage.getItem('endpoint') || 'wss://teach-vue-chat-server.glitch.me'
-)
+import type { Auth } from './types'
 
 const authenticating = ref(false)
 
-export const client = new Client(defaultEndpoint.value)
+export const client = new Client()
 
 export function useChatClient() {
-    function setEndpoint(endpoint: string) {
-        localStorage.setItem('endpoint', endpoint)
-        return client.setEndpoint(endpoint)
-    }
-
-    async function authenticate(
+    async function connect(
         username: string,
-        password: string
+        password: string,
+        endpoint: string
     ): Promise<Auth> {
         authenticating.value = true
+
+        client.setEndpoint(endpoint)
+
         try {
             const auth = await client.authenticate(username, password)
-            localStorage.setItem('username', username)
-            localStorage.setItem('password', password)
             authenticating.value = false
             return auth
         } catch (e) {
@@ -36,13 +27,9 @@ export function useChatClient() {
     }
 
     return {
-        setEndpoint,
-        authenticate,
+        connect,
         emit: client.emit,
         on: client.on,
-        defaultUsername,
-        defaultPassword,
-        defaultEndpoint,
         authenticating,
     }
 }

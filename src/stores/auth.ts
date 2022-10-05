@@ -1,36 +1,48 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Auth } from '@/client/client'
+import type { Auth } from '@/client/types'
 import { useChatClient } from '@/client/useChatClient'
 
-const {
-    defaultUsername,
-    defaultPassword,
-    defaultEndpoint,
-    setEndpoint,
-    authenticate,
-    reinitializeConnection,
-} = useChatClient()
+const defaultUsername = localStorage.getItem('username') || ''
+const defaultPassword = localStorage.getItem('password') || ''
+const defaultEndpoint =
+    localStorage.getItem('endpoint') || 'wss://teach-vue-chat-server.glitch.me'
+
+const { connect } = useChatClient()
 
 export const useAuthStore = defineStore('auth', () => {
 
-    console.log("useAuthStore")
-
     const user = ref<Auth | null>(null)
 
-    return { user, login, logout }
-
     async function login(
-        username = defaultUsername.value || '',
-        password = defaultPassword.value || '',
-        endpoint = defaultEndpoint.value || ''
+        username = defaultUsername,
+        password = defaultPassword,
+        endpoint = defaultEndpoint
     ) {
-        setEndpoint(endpoint)
-        user.value = await authenticate(username, password)
+        try {
+            user.value = await connect(username, password, endpoint)
+
+            localStorage.setItem('username', username)
+            localStorage.setItem('password', password)
+            localStorage.setItem('endpoint', endpoint)
+        } catch (e) {
+            localStorage.setItem('password', '')
+            user.value = null
+            throw e
+        }
     }
 
     async function logout() {
-        user.value = null
-        reinitializeConnection()
+        localStorage.setItem('password', '')
+        window.location.reload()
+    }
+
+    return {
+        user,
+        defaultUsername,
+        defaultPassword,
+        defaultEndpoint,
+        login,
+        logout,
     }
 })
