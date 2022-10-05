@@ -1,15 +1,10 @@
 import io, { Socket } from 'socket.io-client'
-
-export type Auth = {
-    username: string
-    token: string
-    picture_url: string
-}
+import type { Auth, Emit, AuthenticateEmit, Event } from './types'
 
 export default class Client {
     private title: string
     private socket: Socket
-    private callbacks: Record<string, (payload?: unknown) => void>
+    private callbacks: Record<string, (payload: unknown) => void>
     private waitingForAuth: ((payload: Auth) => void)[]
     private auth: null | Auth
     private endpoint: string
@@ -53,19 +48,23 @@ export default class Client {
         }
     }
 
+    reinitializeConnection() {
+        this.socket = io(this.endpoint)
+        this.applyCallbacks()
+    }
+
     setEndpoint(endpoint: string) {
         if (this.endpoint === endpoint) {
             return
         }
-
         this.endpoint = endpoint
-
-        this.socket = io(endpoint)
-
-        this.applyCallbacks()
+        this.reinitializeConnection()
     }
 
-    on(eventName: string, callback: (payload?: unknown) => void) {
+    on<E extends Event>(
+        eventName: E['event'],
+        callback: (payload: E['payload']) => void
+    ) {
         this.callbacks[eventName] = callback
         this.applyCallbacks()
     }
@@ -80,14 +79,31 @@ export default class Client {
         }
     }
 
-    ack<O>(eventName: string, payload: unknown): Promise<O> {
+    async emit<E extends Emit>(
+        eventName: E['event'],
+        payload: E['payload'],
+        requireAuth: E['authenticated'] = true
+    ): Promise<E['response']> {
+        console.log(eventName, requireAuth)
+
+        let token: string
+
+        if (requireAuth) {
+            token = (await this.requireAuth()).token
+        }
+
         return new Promise((resolve, reject) => {
             setTimeout(() => {
+                if (requireAuth) {
+                    payload = { token, ...payload }
+                }
+
                 console.log(this.title, 'emit', eventName, payload)
+
                 this.socket.emit(
                     eventName,
                     payload,
-                    (response: { code: string; data: O }) => {
+                    (response: { code: string; data: E['response'] }) => {
                         console.log(this.title, 'ack', eventName)
 
                         if (response.code === 'SUCCESS') {
@@ -103,10 +119,14 @@ export default class Client {
 
     authenticate(username: string, password: string): Promise<Auth> {
         return new Promise((resolve, reject) => {
-            this.ack<Auth>('@authenticate', {
-                username,
-                password,
-            })
+            this.emit<AuthenticateEmit>(
+                '@authenticate',
+                {
+                    username,
+                    password,
+                },
+                false
+            )
                 .then((auth) => {
                     this.auth = auth
                     resolve(this.auth)
@@ -117,187 +137,6 @@ export default class Client {
                 .catch((e) => {
                     reject(e)
                 })
-        })
-    }
-
-    async getUsers() {
-        const { token } = await this.requireAuth()
-        return this.ack('@getUsers', {
-            token,
-        })
-    }
-
-    async getOrCreateOneToOneConversation(username: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@getOrCreateOneToOneConversation', {
-            token,
-            username,
-        })
-    }
-
-    async createManyToManyConversation(usernames: string[]) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@createManyToManyConversation', {
-            token,
-            usernames,
-        })
-    }
-
-    async postMessage(conversation_id: string, content: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@postMessage', {
-            token,
-            conversation_id,
-            content,
-        })
-    }
-
-    async seeConversation(conversation_id: string, message_id: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@seeConversation', {
-            token,
-            conversation_id,
-            message_id,
-        })
-    }
-
-    async reactMessage(
-        conversation_id: string,
-        message_id: string,
-        reaction: string
-    ) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@reactMessage', {
-            token,
-            conversation_id,
-            message_id,
-            reaction,
-        })
-    }
-
-    async replyMessage(
-        conversation_id: string,
-        message_id: string,
-        content: string
-    ) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@replyMessage', {
-            token,
-            conversation_id,
-            message_id,
-            content,
-        })
-    }
-
-    async getConversations() {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@getConversations', {
-            token,
-        })
-    }
-
-    async searchMessage(search: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@searchMessage', {
-            token,
-            search,
-        })
-    }
-
-    async editMessage(
-        conversation_id: string,
-        message_id: string,
-        content: string
-    ) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@editMessage', {
-            token,
-            conversation_id,
-            message_id,
-            content,
-        })
-    }
-
-    async deleteMessage(conversation_id: string, message_id: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@deleteMessage', {
-            token,
-            conversation_id,
-            message_id,
-        })
-    }
-
-    async addParticipant(conversation_id: string, username: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@addParticipant', {
-            token,
-            conversation_id,
-            username,
-        })
-    }
-
-    async removeParticipant(conversation_id: string, username: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@removeParticipant', {
-            token,
-            conversation_id,
-            username,
-        })
-    }
-
-    async typeConversation(conversation_id: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@typeConversation', {
-            token,
-            conversation_id,
-        })
-    }
-
-    async setConversationTheme(conversation_id: string, theme: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@setConversationTheme', {
-            token,
-            conversation_id,
-            theme,
-        })
-    }
-
-    async setConversationTitle(conversation_id: string, title: string) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@setConversationTitle', {
-            token,
-            conversation_id,
-            title,
-        })
-    }
-
-    async setParticipantNickname(
-        conversation_id: string,
-        participant: string,
-        nickname: string
-    ) {
-        const { token } = await this.requireAuth()
-
-        return this.ack('@setParticipantNickname', {
-            token,
-            conversation_id,
-            participant,
-            nickname,
         })
     }
 }

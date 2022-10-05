@@ -9,12 +9,16 @@ const {
     defaultEndpoint,
     setEndpoint,
     authenticate,
+    reinitializeConnection,
 } = useChatClient()
 
 export const useAuthStore = defineStore('auth', () => {
+
+    console.log("useAuthStore")
+
     const user = ref<Auth | null>(null)
 
-    return { user, login }
+    return { user, login, logout }
 
     async function login(
         username = defaultUsername.value || '',
@@ -23,5 +27,10 @@ export const useAuthStore = defineStore('auth', () => {
     ) {
         setEndpoint(endpoint)
         user.value = await authenticate(username, password)
+    }
+
+    async function logout() {
+        user.value = null
+        reinitializeConnection()
     }
 })

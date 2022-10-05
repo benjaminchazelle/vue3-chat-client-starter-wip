@@ -7,7 +7,6 @@ const authStore = useAuthStore()
 
 const { defaultUsername, defaultPassword, defaultEndpoint, authenticating } =
     useChatClient()
-
 const username = ref(defaultUsername.value)
 const password = ref(defaultPassword.value)
 const endpoint = ref(defaultEndpoint.value)
