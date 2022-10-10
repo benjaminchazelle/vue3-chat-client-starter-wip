@@ -1,15 +1,48 @@
 <script setup lang="ts">
-import { toRefs } from 'vue'
-import { RouterView } from 'vue-router'
+import { toRefs, watch } from 'vue'
+import { RouterView, useRouter } from 'vue-router'
 import Auth from '@/components/Auth/Auth.vue'
 import Sidebar from '@/components/Sidebar/Sidebar.vue'
+import { useHighLevelClientEmits } from '@/composables/emits'
+import { listenHighLevelClientEvents } from '@/composables/events'
 import { useAuthStore } from '@/stores/auth'
+import { useMessengerStore } from '@/stores/messenger'
 
 const authStore = useAuthStore()
 
+const { user } = toRefs(authStore)
+
+const messengerStore = useMessengerStore()
+
+const router = useRouter()
+
+const clientEmits = useHighLevelClientEmits()
+
+listenHighLevelClientEvents()
+
+watch(user, (newUser, oldUser) => {
+    const justAuthenticated = newUser && !oldUser
+    if (justAuthenticated) {
+        clientEmits.getUsers()
+        // clientEmits.getConversations()
+    }
+})
+
 authStore.login()
 
-const { user } = toRefs(authStore)
+router.beforeEach((to, from, next) => {
+    let conversationId: string | null = null
+
+    if (to.name === 'Conversation') {
+        conversationId = Array.isArray(to.params.id)
+            ? to.params.id[0]
+            : to.params.id
+    }
+
+    messengerStore.setCurrentConversationId(conversationId)
+
+    next()
+})
 </script>
 
 <template>
@@ -17,13 +50,12 @@ const { user } = toRefs(authStore)
     <template v-else>
         <Sidebar />
         <div class="main">
-            <RouterView/>
+            <RouterView />
         </div>
     </template>
 </template>
 
 <style scoped>
-
 .main {
     position: absolute;
     top: 0;

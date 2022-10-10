@@ -1,12 +1,12 @@
 import { ref } from 'vue'
+import type { Auth } from '@/client/types/business'
 import Client from './client'
-import type { Auth } from './types'
 
 const authenticating = ref(false)
 
 export const client = new Client()
 
-export function useChatClient() {
+export function useLowLevelClient() {
     async function connect(
         username: string,
         password: string,
@@ -28,8 +28,8 @@ export function useChatClient() {
 
     return {
         connect,
-        emit: client.emit,
-        on: client.on,
+        emit: client.emit.bind(client),
+        on: client.on.bind(client),
         authenticating,
     }
 }

@@ -1,37 +1,37 @@
-<script setup>
+<script setup lang="ts">
 import { toRefs } from 'vue'
+import { useRouter } from 'vue-router'
+import type { Conversation } from '@/client/types/business'
 import { useAuthStore } from '@/stores/auth'
+import { useMessengerStore } from '@/stores/messenger'
+
+const router = useRouter()
 
 const authStore = useAuthStore()
+
+const messengerStore = useMessengerStore()
 
 const { user } = toRefs(authStore)
 const { logout } = authStore
 
-// data() {
-//     return {
-//         search: ""
-//     };
-// },
-// methods: {
-// ...mapActions(["deauthenticate"]),
-//         openCommunity() {
-//         router.push({ name: "Community" });
-//     },
-//     openMessageSearch() {
-//         router.push({ name: "Search" });
-//     },
-//     openConversation(id) {
-//         router.push({ name: "Conversation", params: { id } });
-//     }
-// },
-// computed: {
-// ...mapGetters(["user", "conversations"])
-// }
+const { conversations } = toRefs(messengerStore)
+
+function openCommunity() {
+    router.push({ name: 'Community' })
+}
+
+function openMessageSearch() {
+    router.push({ name: 'Search' })
+}
+
+function openConversation(id: Conversation['id']) {
+    router.push({ name: 'Conversation', params: { id } })
+}
 </script>
 
 <template>
     <div class="sidebar">
-        <div class="user">
+        <div class="user" v-if="user">
             <div class="user-picture">
                 <img :src="user.picture_url" class="ui circular image" />
             </div>
@@ -80,7 +80,9 @@ const { logout } = authStore
             <div
                 class="conversation new"
                 title="Bob"
-                @click="openConversation(0)"
+                @click="
+                    openConversation('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d')
+                "
             >
                 <a class="avatar">
                     <img
@@ -101,7 +103,9 @@ const { logout } = authStore
             <div
                 class="conversation"
                 title="Groupe: Gael, Bob"
-                @click="openConversation(0)"
+                @click="
+                    openConversation('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d')
+                "
             >
                 <a class="avatar">
                     <span>
@@ -119,11 +123,13 @@ const { logout } = authStore
             <div
                 class="conversation available"
                 title="Cha"
-                @click="openConversation(0)"
+                @click="
+                    openConversation('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d')
+                "
             >
                 <a class="avatar">
                     <img
-                        src="https://source.unsplash.com/8wbxjJBrl3k/100x100"
+                        src="https://source.unsplash.com/rITj7p2KeZE/100x100"
                     />
                 </a>
                 <div class="content">
@@ -132,7 +138,7 @@ const { logout } = authStore
                             <i class="ui small icon circle"></i>
                             Cha
                         </div>
-                        <span class="time">01:47:50</span>
+                        <span class="time">2 jours</span>
                     </div>
                     <div class="text">Nouvelle conversation</div>
                 </div>
@@ -140,7 +146,9 @@ const { logout } = authStore
             <div
                 class="conversation selected"
                 title="Derek"
-                @click="openConversation(0)"
+                @click="
+                    openConversation('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d')
+                "
             >
                 <a class="avatar">
                     <img
@@ -150,7 +158,7 @@ const { logout } = authStore
                 <div class="content">
                     <div class="metadata">
                         <div class="title">Derek</div>
-                        <span class="time">01:48:00</span>
+                        <span class="time">3 semaines</span>
                     </div>
                     <div class="text">Nouvelle conversation</div>
                 </div>
