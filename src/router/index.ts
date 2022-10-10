@@ -21,6 +21,11 @@ const router = createRouter({
             name: 'Search',
             component: Search,
         },
+        {
+            path: '/:pathMatch(.*)*',
+            name: 'Community',
+            component: Community,
+        },
     ],
 })
 

@@ -1,17 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Auth } from '@/client/types'
-import { useChatClient } from '@/client/useChatClient'
+import type { Auth } from '@/client/types/business'
+import { useLowLevelClient } from '@/client/useLowLevelClient'
 
 const defaultUsername = localStorage.getItem('username') || ''
 const defaultPassword = localStorage.getItem('password') || ''
 const defaultEndpoint =
     localStorage.getItem('endpoint') || 'wss://teach-vue-chat-server.glitch.me'
 
-const { connect } = useChatClient()
+const { connect } = useLowLevelClient()
 
 export const useAuthStore = defineStore('auth', () => {
-
     const user = ref<Auth | null>(null)
 
     async function login(

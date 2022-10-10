@@ -1,5 +1,7 @@
 import io, { Socket } from 'socket.io-client'
-import type { Auth, Emit, AuthenticateEmit, Event } from './types'
+import type { Auth } from '@/client/types/business'
+import type { AuthenticateEmit, Emit } from '@/client/types/emits'
+import type { Event } from '@/client/types/events'
 
 export default class Client {
     private title: string
@@ -30,13 +32,17 @@ export default class Client {
     applyCallbacks() {
         if (!this.socket) return
 
+        this.socket.removeAllListeners('connect')
         this.socket.on('connect', async () => {
             console.log('socket@connect', this.socket.id)
         })
 
         for (const eventName of Object.keys(this.callbacks)) {
+            console.log({eventName})
+
+            this.socket.removeAllListeners(eventName)
             this.socket.on(
-                '@' + eventName,
+                 eventName,
                 async (data: unknown, ack: () => void) => {
                     console.log(this.title, 'on', '@' + eventName, data)
                     this.callbacks[eventName](data)
@@ -104,7 +110,7 @@ export default class Client {
                     eventName,
                     payload,
                     (response: { code: string; data: E['response'] }) => {
-                        console.log(this.title, 'ack', eventName)
+                        console.log(this.title, 'ack', eventName, response)
 
                         if (response.code === 'SUCCESS') {
                             resolve(response.data)

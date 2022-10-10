@@ -1,31 +1,42 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import { useChatClient } from '@/client/useChatClient'
+import { useRouter } from 'vue-router'
+import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
+const router = useRouter()
+
 const { defaultUsername, defaultPassword, defaultEndpoint } = authStore
 
-const { authenticating } = useChatClient()
+const { authenticating } = useLowLevelClient()
 
 const username = ref(defaultUsername)
 const password = ref(defaultPassword)
 const endpoint = ref(defaultEndpoint)
 
-const error = ref(null)
+const error = ref<unknown>(null)
 
 async function login() {
     error.value = null
     try {
         await authStore.login(username.value, password.value)
+        router.push({ name: 'Community' })
     } catch (e) {
         const messages = {
             NOT_AUTHENTICATED: 'Mot de passe incorrect',
             NOT_VALID_USERNAME: 'Username non valide',
             NOT_VALID_PASSWORD: 'Mot de passe non valide',
         }
-        error.value = messages?.[e] || e
+
+        let message = e
+
+        if (typeof e === 'string' && Object.keys(messages).includes(e)) {
+            message = messages[e as keyof typeof messages]
+        }
+
+        error.value = message
     }
 }
 </script>

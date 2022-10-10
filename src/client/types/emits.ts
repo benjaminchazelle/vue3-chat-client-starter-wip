@@ -1,14 +1,10 @@
-export type Auth = {
-    username: string
-    token: string
-    picture_url: string
-}
+import type { Auth, Conversation, Message, User } from '@/client/types/business'
 
 export interface Emit {
     event: string
     authenticated: boolean
-    payload: {}
-    response: {}
+    payload: object
+    response: object
 }
 
 export interface AuthenticateEmit extends Emit {
@@ -26,7 +22,7 @@ export interface GetUsersEmit extends Emit {
     authenticated: true
     payload: {}
     response: {
-        // TODO
+        users: User[]
     }
 }
 
@@ -37,7 +33,7 @@ export interface GetOrCreateOneToOneConversationEmit extends Emit {
         username: string
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
 }
 
@@ -48,7 +44,7 @@ export interface CreateManyToManyConversationEmit extends Emit {
         usernames: string[]
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
 }
 
@@ -60,7 +56,7 @@ export interface PostMessageEmit extends Emit {
         content: string
     }
     response: {
-        // TODO
+        message: Message
     }
 }
 
@@ -69,11 +65,9 @@ export interface SeeConversationEmit extends Emit {
     authenticated: true
     payload: {
         conversation_id: string
-        message: string
+        message_id: string
     }
-    response: {
-        // TODO
-    }
+    response: {}
 }
 
 export interface ReactMessageEmit extends Emit {
@@ -82,11 +76,9 @@ export interface ReactMessageEmit extends Emit {
     payload: {
         conversation_id: string
         message_id: string
-        reaction: string
+        reaction: Message['reactions'][0]
     }
-    response: {
-        // TODO
-    }
+    response: {}
 }
 
 export interface ReplyMessageEmit extends Emit {
@@ -98,7 +90,7 @@ export interface ReplyMessageEmit extends Emit {
         content: string
     }
     response: {
-        // TODO
+        message: Message
     }
 }
 
@@ -107,7 +99,7 @@ export interface GetConversationsEmit extends Emit {
     authenticated: true
     payload: {}
     response: {
-        // TODO
+        conversations: Conversation[]
     }
 }
 
@@ -118,7 +110,7 @@ export interface SearchMessageEmit extends Emit {
         search: string
     }
     response: {
-        // TODO
+        conversations: Conversation[]
     }
 }
 
@@ -130,9 +122,7 @@ export interface EditMessageEmit extends Emit {
         message_id: string
         content: string
     }
-    response: {
-        // TODO
-    }
+    response: {}
 }
 
 export interface DeleteMessageEmit extends Emit {
@@ -142,9 +132,7 @@ export interface DeleteMessageEmit extends Emit {
         conversation_id: string
         message_id: string
     }
-    response: {
-        // TODO
-    }
+    response: {}
 }
 
 export interface AddParticipantEmit extends Emit {
@@ -155,7 +143,7 @@ export interface AddParticipantEmit extends Emit {
         username: string
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
 }
 
@@ -167,7 +155,7 @@ export interface RemoveParticipantEmit extends Emit {
         username: string
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
 }
 
@@ -178,7 +166,7 @@ export interface TypeConversationEmit extends Emit {
         conversation_id: string
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
 }
 
@@ -190,7 +178,7 @@ export interface SetConversationThemeEmit extends Emit {
         theme: string
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
 }
 
@@ -202,11 +190,11 @@ export interface SetConversationTitleEmit extends Emit {
         title: string
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
 }
 
-export interface SetParticipantNickname extends Emit {
+export interface SetParticipantNicknameEmit extends Emit {
     event: '@setParticipantNickname'
     authenticated: true
     payload: {
@@ -215,11 +203,6 @@ export interface SetParticipantNickname extends Emit {
         nickname: string
     }
     response: {
-        // TODO
+        conversation: Conversation
     }
-}
-
-export interface Event {
-    event: string
-    payload: unknown
 }
