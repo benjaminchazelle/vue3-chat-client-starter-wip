@@ -38,8 +38,6 @@ export default class Client {
         })
 
         for (const eventName of Object.keys(this.callbacks)) {
-            console.log({eventName})
-
             this.socket.removeAllListeners(eventName)
             this.socket.on(
                  eventName,
@@ -90,7 +88,6 @@ export default class Client {
         payload: E['payload'],
         requireAuth: E['authenticated'] = true
     ): Promise<E['response']> {
-        console.log(eventName, requireAuth)
 
         let token: string
 
